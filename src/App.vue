@@ -1,29 +1,91 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
     <router-view/>
   </div>
 </template>
 
-<style lang="scss">
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-#nav {
-  padding: 30px;
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-    &.router-link-exact-active {
-      color: #42b983;
+<script>
+export default {
+  name: "app",
+  created() {
+    this.getLocation();
+  },
+  methods: {
+    getLocation() {
+      let that = this;
+      AMap.plugin("AMap.Geolocation", function() {
+        var geolocation = new AMap.Geolocation({
+          // 是否使用高精度定位，默认：true
+          enableHighAccuracy: true,
+          // 设置定位超时时间，默认：无穷大
+          timeout: 10000
+        });
+
+        geolocation.getCurrentPosition();
+        AMap.event.addListener(geolocation, "complete", onComplete);
+        AMap.event.addListener(geolocation, "error", onError);
+
+        function onComplete(data) {
+          // data是具体的定位信息
+          // 存储精准定位信息
+          console.log(data);
+          that.$store.commit("map/setLocation", data);
+          that.$store.commit("map/setAddress", data.formattedAddress);
+        }
+
+        function onError(data) {
+          // console.log(data)
+          // 精准定位失败，执行IP定位城市
+          that.getLngLaLocation();
+        }
+      });
+    },
+    // 靳准定位失败执行函数并保存信息
+    getLngLaLocation() {
+      const that = this;
+      console.log('精准定位失败');
+      AMap.plugin("AMap.CitySearch", function() {
+        var citySearch = new AMap.CitySearch();
+        citySearch.getLocalCity(function(status, result) {
+          if (status === "complete" && result.info === "OK") {
+            // 查询成功，result即为当前所在城市信息
+            // console.log(result);
+            AMap.plugin("AMap.Geocoder", function() {
+              var geocoder = new AMap.Geocoder({
+                // city 指定进行编码查询的城市，支持传入城市名、adcode 和 citycode
+                city: result.adcode
+              });
+
+              var lnglat = result.rectangle.split(";")[0].split(",");
+              geocoder.getAddress(lnglat, function(status, data) {
+                if (status === "complete" && data.info === "OK") {
+                  // result为对应的地理位置详细信息
+                  that.$store.commit("map/setLocation", {
+                    addressComponent: {
+                      city: data.regeocode.addressComponent.city,
+                      province: data.regeocode.addressComponent.province
+                    },
+                    formattedAddress: data.regeocode.formattedAddress
+                  });
+                  // console.log(data)
+                  that.$store.commit('map/setAddress', data.regeocode.formattedAddress);
+                }
+              });
+            });
+          }
+        });
+      });
     }
   }
+};
+</script>
+
+
+<style lang="scss">
+#app {
+  width: 100%;
+  height: 100%;
+  font-size: 14px;
+  background-color: #f1f1f1;
 }
 </style>

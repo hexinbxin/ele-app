@@ -1,29 +1,16 @@
-# ele-app
+### 功能点
 
-## Project setup
-```
-npm install
-```
+* 手机验证码登陆
+* 自动登陆
+* 地理定位
+* 搜索详情定位
+* 选择定位城市
+* 搜索商品
+* 商品/店铺搜索
+* 店铺按条件排序
+* 店铺按条件筛选
+* 店铺列表下拉刷新/下拉加载更多
+* 展示店铺详情
+* 商品数量加减
+* 商品列表与商品类别相互关联
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Run your tests
-```
-npm run test
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
